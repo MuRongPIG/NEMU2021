@@ -23,10 +23,10 @@ typedef struct {
 		} gpr[8];
 
 		/* Do NOT change the order of the GPRs' definitions. */
-
-		struct {
-			uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
-		};
+		// struct {
+		// 	uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+		// };
+		uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
 	};
 
      swaddr_t eip;
