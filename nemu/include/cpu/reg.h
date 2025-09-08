@@ -23,10 +23,11 @@ typedef struct {
 		} gpr[8];
 
 		/* Do NOT change the order of the GPRs' definitions. */
-		// struct {
-		// 	uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
-		// };
-		uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+		// 使用结构体来共享union数组的每个元素的内存，提供对同一寄存器的两种访问方式
+		// 使用匿名结构体来减少额外层级
+		struct {
+			uint32_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+		};
 	};
 
      swaddr_t eip;
