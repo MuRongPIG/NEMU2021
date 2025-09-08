@@ -38,6 +38,8 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -46,9 +48,8 @@ static struct {
 	{ "help", "Display informations about all supported commands", cmd_help },
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
-
+	{ "si", "Step one instruction exactly.", cmd_si},
 	/* TODO: Add more commands */
-
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
@@ -76,12 +77,29 @@ static int cmd_help(char *args) {
 	return 0;
 }
 
+static int cmd_si(char *args) {
+	/* 已经在 ui_mainloop 中第一次使用 strtok,现在使用 NULL 表示继续分割同一个字符串 */
+	char *arg = strtok(NULL, " ");
+	int cnt = 0;
+	// 没有传参，默认值为 1
+	if(arg == NULL) {
+		cnt = 1;
+	}
+	else {
+		cnt = atoi(arg);
+	}
+	assert(cnt > 0);
+	cpu_exec(cnt);
+	return 0;
+}
+
 void ui_mainloop() {
 	while(1) {
 		char *str = rl_gets();
 		char *str_end = str + strlen(str);
 
 		/* extract the first token as the command */
+		/* 第一次使用 strtok 需要传入字符串，之后分割同一个字符串时传入 NULL */
 		char *cmd = strtok(str, " ");
 		if(cmd == NULL) { continue; }
 
