@@ -40,6 +40,8 @@ static int cmd_help(char *args);
 
 static int cmd_si(char *args);
 
+static int cmd_info(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -55,6 +57,7 @@ static struct {
 		"Argument N means step N times (n till program stops for another reason).",
 		cmd_si
 	},
+	{ "info", "Generic command for showing things about the program being debugged.", cmd_info },
 	/* TODO: Add more commands */
 };
 
@@ -97,6 +100,13 @@ static int cmd_si(char *args) {
 	assert(cnt > 0);
 	cpu_exec(cnt);
 	return 0;
+}
+
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL, " ");
+	if(strcmp(arg, "r") == 0) {
+		
+	}
 }
 
 void ui_mainloop() {
