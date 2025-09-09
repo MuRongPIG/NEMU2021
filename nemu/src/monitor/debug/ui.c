@@ -42,6 +42,8 @@ static int cmd_si(char *args);
 
 static int cmd_info(char *args);
 
+static int cmd_x(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -58,6 +60,7 @@ static struct {
 		cmd_si
 	},
 	{ "info", "Generic command for showing things about the program being debugged.", cmd_info },
+	{ "x", "Scan the memory." , cmd_x},
 	/* TODO: Add more commands */
 };
 
@@ -99,7 +102,7 @@ static int cmd_si(char *args) {
 	}
 	// assert(cnt > 0);
 	if(cnt <= 0) {
-		printf("The times should be a positive integer.\n");
+		printf("The argument should be a positive integer.\n");
 	}
 	else {
 		cpu_exec(cnt);
@@ -121,6 +124,32 @@ static int cmd_info(char *args) {
 	}
 	else {
 		printf("Invalid command.\n");
+	}
+	return 0;
+}
+
+// 目前只实现读取十六进制整数作为表达式的值，之后需要将其修改为读取表达式并求值
+static int cmd_x(char *args) {
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+		return 0;
+	}
+	int n;
+	swaddr_t addr;
+	sscanf(args,"%d 0x%x",&n,&addr);
+	int i;
+	for(i = 1; 4 * i <= n; ++i) {
+		printf("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n",addr,swaddr_read(addr,4),swaddr_read(addr+4,4),swaddr_read(addr+8,4),swaddr_read(addr+12,4));
+		addr += 16;
+	}
+	if(4 * i < n) {
+		printf("0x%08x: ",addr);
+		int j;
+		for(j = 4 * i + 1; j <= n; ++j) {
+			printf(" 0x%08x",swaddr_read(addr,4));
+			addr += 4;
+		}
+		printf("\n");
 	}
 	return 0;
 }
