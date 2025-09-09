@@ -5,9 +5,10 @@
  */
 #include <sys/types.h>
 #include <regex.h>
+#include <stdlib.h>
 
 enum {
-	NOTYPE = 256, EQ = 257, DEC = 258,
+	NOTYPE = 256, EQ, DEC,
 
 	/* TODO: Add more token types */
 
@@ -111,10 +112,10 @@ static bool make_token(char *e) {
 					// 十进制整数，除了记录 token 类型，还需把字符串存储起来
 					// 断言长度不超过 str 数组存储上限
 					case DEC:
-						tokens[nr_token++].type = DEC;
+						tokens[nr_token].type = DEC;
 						Assert(substr_len < 32, "length of int is too long (> 31)");
 						strncpy(tokens[nr_token].str, substr_start, substr_len);
-						tokens[nr_token].str[substr_len] = '\0';
+						tokens[nr_token++].str[substr_len] = '\0';
 						break;
 					default: break;//panic("please implement me");
 				}
@@ -128,9 +129,92 @@ static bool make_token(char *e) {
 			return false;
 		}
 	}
-	//
+	// 取消最后一次 nr_token++ 的多余操作
 	nr_token--;
 	return true; 
+}
+
+// 判断表达式是否被一对匹配的括号包围，同时检查表达式的括号是否合法
+bool check_parentheses(int p,int q) {
+	// 首先判断是否最外侧是一对括号
+	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
+	// 判断括号序列是否合法
+	int dlt = 0;
+	int i;
+	for(i = p; i <= q; ++i) {
+		if(tokens[i].type == '(') dlt++;
+		if(tokens[i].type == ')') dlt--;
+		// 括号序列不合法时，dlt < 0
+		assert(dlt >= 0);
+	}
+	// dlt != 0 时不合法
+	assert(dlt == 0);
+	return true;
+}
+
+int get_op_priority(int op) {
+	switch(op) {
+		case '*': case '/': return 1;
+		case '+': case '-': return 2;
+		case EQ: return 4;
+		default: assert(0);
+	}
+}
+
+int find_dominant_operator(int p,int q) {
+	int dlt = 0;
+	int i;
+	int mx_priority = -1, mx_pos = -1;
+	for(i = p; i <= q; ++i) {
+		// 必须是运算符
+		if(tokens[i].type == DEC) continue;
+		if(tokens[i].type == '(') {
+			dlt++; continue;
+		}
+		if(tokens[i].type == ')') {
+			dlt--; continue;
+		}
+		// 在括号内时不考虑
+		if(dlt != 0) continue;
+		int now_priority = get_op_priority(tokens[i].type);
+		// 当前优先级最小，且最靠右
+		if(now_priority >= mx_priority) {
+			mx_priority = now_priority;
+			mx_pos = i;
+		}
+	}
+	assert(mx_pos != -1);
+	return mx_pos;
+}
+
+uint32_t eval(int p,int q) {
+	if(p > q) {
+		// 表达式异常
+		assert(0);
+	}
+	else if(p == q) {
+		// 表达式仅为一个 token，只可能是数字
+		assert(tokens[p].type == DEC);
+		//字符串转化为数字
+		return strtol(tokens[p].str, NULL, 0);
+	}
+	else if(check_parentheses(p,q) == true) {
+		// 表达式被括号包围，
+		// 此时去掉最外层括号，表达式不变
+		return eval(p+1,q-1);
+	}
+	else {
+		int domi_pos = find_dominant_operator(p,q);
+		int Lval = eval(p,domi_pos-1), Rval = eval(domi_pos+1,q);
+		int op = tokens[domi_pos].type;
+		switch(op) {
+			case '+': return Lval + Rval;
+			case '-': return Lval - Rval;
+			case '*': return Lval * Rval;
+			case '/': return Lval / Rval;
+			default: assert(0);
+		}
+	}
 }
 
 uint32_t expr(char *e, bool *success) {
