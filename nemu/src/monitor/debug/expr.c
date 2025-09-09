@@ -140,7 +140,7 @@ bool check_parentheses(int p,int q,bool* success) {
 	return true;
 }
 
-int get_op_priority(int op,bool *success) {
+int get_op_priority(int op) {
 	switch(op) {
 		case '!': case NEG: case REF: return 0;
 		case '*': case '/': return 1;
@@ -148,8 +148,7 @@ int get_op_priority(int op,bool *success) {
 		case EQ: case NEQ: return 4;
 		case AND: return 9;
 		case OR: return 10;
-		default: 
-			assert(0);
+		default: assert(0);
 	}
 }
 
@@ -164,8 +163,7 @@ int find_dominant_operator(int p,int q,bool *success) {
 			case ')': dlt--; break;
 			default:
 				if(dlt == 0) {
-					int now_priority = get_op_priority(tokens[i].type,success);
-					if(!*success) { return 0; }
+					int now_priority = get_op_priority(tokens[i].type);
 					// 单目运算符左侧优先作为主运算符，特殊判断
 					if(now_priority > mx_priority ||  
 						(now_priority == mx_priority 
