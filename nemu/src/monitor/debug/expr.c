@@ -8,10 +8,10 @@
 #include <stdlib.h>
 
 enum {
-	NOTYPE = 256, EQ, DEC,
+	NOTYPE = 256, EQ,
 
 	/* TODO: Add more token types */
-
+	NEQ, NUM, OR, AND, REG, ID, REF, NEG,
 };
 
 static struct rule {
@@ -28,12 +28,19 @@ static struct rule {
 	{"-", '-'},						// subtraction
 	{"\\*", '*'},					// multiplication
 	{"/", '/'},						// division
-
+	{"==", EQ},						// equal
+	{"!=", NEQ},					// not equal
+	{"\\&\\&", AND},				// and
+	{"\\|\\|", OR},					// or
+	{"\\!", '!'},
+	{"0x[0-9a-fA-F]{1,8}", NUM},	// HEX
+	{"[1-9]+[0-9]*", NUM},			// DEC
+	{""},
 	{"\\(", '('},					// left bracket
 	{"\\)", ')'},					// right bracket
 
-	{"[1-9]+[0-9]*", DEC},			// decimal integer
-	{"==", EQ}						// equal
+	
+	
 
 };
 
@@ -111,8 +118,8 @@ static bool make_token(char *e) {
 						break;
 					// 十进制整数，除了记录 token 类型，还需把字符串存储起来
 					// 断言长度不超过 str 数组存储上限
-					case DEC:
-						tokens[nr_token].type = DEC;
+					case NUM:
+						tokens[nr_token].type = NUM;
 						Assert(substr_len < 32, "length of int is too long (> 31)");
 						strncpy(tokens[nr_token].str, substr_start, substr_len);
 						tokens[nr_token++].str[substr_len] = '\0';
@@ -165,7 +172,7 @@ int find_dominant_operator(int p,int q) {
 	int mx_priority = -1, mx_pos = -1;
 	for(i = p; i <= q; ++i) {
 		// 必须是运算符
-		if(tokens[i].type == DEC) continue;
+		if(tokens[i].type == NUM) continue;
 		if(tokens[i].type == '(') {
 			dlt++; continue;
 		}
@@ -192,7 +199,7 @@ uint32_t eval(int p,int q) {
 	}
 	else if(p == q) {
 		// 表达式仅为一个 token，只可能是数字
-		assert(tokens[p].type == DEC);
+		assert(tokens[p].type == NUM);
 		//字符串转化为数字
 		return strtol(tokens[p].str, NULL, 0);
 	}
