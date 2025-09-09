@@ -140,7 +140,7 @@ bool check_parentheses(int p,int q,bool* success) {
 	return true;
 }
 
-int get_op_priority(int op) {
+int get_op_priority(int op,bool *success) {
 	switch(op) {
 		case '!': case NEG: case REF: return 0;
 		case '*': case '/': return 1;
@@ -163,7 +163,8 @@ int find_dominant_operator(int p,int q,bool *success) {
 			case ')': dlt--; break;
 			default:
 				if(dlt == 0) {
-					int now_priority = get_op_priority(tokens[i].type);
+					int now_priority = get_op_priority(tokens[i].type,success);
+					if(!*success) { return 0; }
 					// 单目运算符左侧优先作为主运算符，特殊判断
 					if(now_priority > mx_priority ||  
 						(now_priority == mx_priority 
@@ -185,7 +186,7 @@ uint32_t get_reg_val(const char *s,bool *success);
 uint32_t eval(int p,int q,bool *success) {
 	if(p > q) {
 		// 表达式异常
-		assert(0);
+		// assert(0);
 		*success = false;
 		return 0;
 	}
@@ -234,7 +235,10 @@ uint32_t eval(int p,int q,bool *success) {
 					// current_sreg = R_DS;  // 暂时注释掉，但保留以供将来使用
 					return swaddr_read(val, 4);
 				
-				default: assert(0);
+				default: 
+					// assert(0);
+					*success = false;
+					return 0;
 			}
 		}
 		uint32_t Lval = eval(p,op-1,success);
@@ -250,7 +254,10 @@ uint32_t eval(int p,int q,bool *success) {
 			case NEQ: return Lval != Rval;
 			case AND: return Lval && Rval;
 			case OR: return Lval || Rval;
-			default: assert(0);
+			default: 
+				// assert(0);
+				*success = false;
+				return 0;
 		}
 	}
 }
