@@ -53,8 +53,8 @@ static struct {
 	{ 
 		"si", 
 		"Step one instruction exactly.\n"
-		"Usage: si [N]\n"
-		"Argument N means step N times (n till program stops for another reason).",
+		"\tUsage: si [N]\n"
+		"\tArgument N means step N times (n till program stops for another reason).",
 		cmd_si
 	},
 	{ "info", "Generic command for showing things about the program being debugged.", cmd_info },
