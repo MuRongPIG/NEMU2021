@@ -129,8 +129,6 @@ static bool make_token(char *e) {
 			return false;
 		}
 	}
-	// 取消最后一次 nr_token++ 的多余操作
-	nr_token--;
 	return true; 
 }
 
@@ -225,6 +223,6 @@ uint32_t expr(char *e, bool *success) {
 	/* TODO: Insert codes to evaluate the expression. */
 	// panic("please implement me");
 	*success = true;
-	return eval(0,nr_token);
+	return eval(0,nr_token-1);
 }
 
