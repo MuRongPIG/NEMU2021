@@ -7,7 +7,7 @@
 #include <regex.h>
 
 enum {
-	NOTYPE = 256, EQ
+	NOTYPE = 256, EQ = 257, DEC = 258,
 
 	/* TODO: Add more token types */
 
@@ -24,12 +24,21 @@ static struct rule {
 
 	{" +",	NOTYPE},				// spaces
 	{"\\+", '+'},					// plus
+	{"-", '-'},						// subtraction
+	{"\\*", '*'},					// multiplication
+	{"/", '/'},						// division
+
+	{"\\(", '('},					// left bracket
+	{"\\)", ')'},					// right bracket
+
+	{"[1-9]+[0-9]*", DEC},			// decimal integer
 	{"==", EQ}						// equal
+
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
 
-static regex_t re[NR_REGEX];
+static regex_t re[NR_REGEX] = {};
 
 /* Rules are used for many times.
  * Therefore we compile them only once before any usage.
@@ -40,6 +49,7 @@ void init_regex() {
 	int ret;
 
 	for(i = 0; i < NR_REGEX; i ++) {
+		// 编译正则表达式
 		ret = regcomp(&re[i], rules[i].regex, REG_EXTENDED);
 		if(ret != 0) {
 			regerror(ret, &re[i], error_msg, 128);
@@ -79,7 +89,34 @@ static bool make_token(char *e) {
 				 */
 
 				switch(rules[i].token_type) {
-					default: panic("please implement me");
+					case NOTYPE: break;
+					case '+':
+						tokens[nr_token++].type = '+';
+						break;
+					case '-':
+						tokens[nr_token++].type = '-';
+						break;
+					case '*':
+						tokens[nr_token++].type = '*';
+						break;
+					case '/':
+						tokens[nr_token++].type = '/';
+						break;
+					case '(':
+						tokens[nr_token++].type = '(';
+						break;
+					case ')':
+						tokens[nr_token++].type = ')';
+						break;
+					// 十进制整数，除了记录 token 类型，还需把字符串存储起来
+					// 断言长度不超过 str 数组存储上限
+					case DEC:
+						tokens[nr_token++].type = DEC;
+						Assert(substr_len < 32, "length of int is too long (> 31)");
+						strncpy(tokens[nr_token].str, substr_start, substr_len);
+						tokens[nr_token].str[substr_len] = '\0';
+						break;
+					default: break;//panic("please implement me");
 				}
 
 				break;
@@ -91,7 +128,8 @@ static bool make_token(char *e) {
 			return false;
 		}
 	}
-
+	//
+	nr_token--;
 	return true; 
 }
 
