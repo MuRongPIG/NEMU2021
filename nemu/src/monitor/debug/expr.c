@@ -261,7 +261,7 @@ uint32_t expr(char *e, bool *success) {
 				tokens[i].type = NEG;
 				continue;
 			}
-			prev_type = tokens[i-1].type;
+			prev_type = tokens[i - 1].type;
 			if(!(prev_type == ')' || prev_type == ID || prev_type == NUM ||
 			prev_type == REG)) {
 				tokens[i].type = NEG;
@@ -273,7 +273,7 @@ uint32_t expr(char *e, bool *success) {
 				tokens[i].type = REF;
 				continue;
 			}
-			prev_type = tokens[i-1].type;
+			prev_type = tokens[i - 1].type;
 			if(!(prev_type == ')' || prev_type == ID || prev_type == NUM ||
 			prev_type == REG)) {
 				tokens[i].type = REF;
