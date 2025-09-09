@@ -138,14 +138,14 @@ static int cmd_x(char *args) {
 	swaddr_t addr;
 	sscanf(args,"%d 0x%x",&n,&addr);
 	int i;
-	for(i = 1; 4 * i <= n; ++i) {
+	// 四个四个输出
+	for(i = 0; i < n/4; ++i) {
 		printf("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n",addr,swaddr_read(addr,4),swaddr_read(addr+4,4),swaddr_read(addr+8,4),swaddr_read(addr+12,4));
 		addr += 16;
 	}
-	if(4 * i < n) {
+	if(n % 4 != 0) {
 		printf("0x%08x: ",addr);
-		int j;
-		for(j = 4 * i + 1; j <= n; ++j) {
+		for(i = 0; i < n % 4; ++i) {
 			printf(" 0x%08x",swaddr_read(addr,4));
 			addr += 4;
 		}
