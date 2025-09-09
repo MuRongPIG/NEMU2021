@@ -179,7 +179,7 @@ int find_dominant_operator(int p,int q) {
 uint32_t get_reg_val(const char *s);
 
 uint32_t eval(int p,int q,bool *success) {
-	printf("%d %d\n",p,q);
+	// printf("%d %d\n",p,q);
 	if(p > q) {
 		// 表达式异常
 		// printf("%d %d\n",p,q);
@@ -212,7 +212,7 @@ uint32_t eval(int p,int q,bool *success) {
 	else {
 		int op = find_dominant_operator(p,q);
 		int op_type = tokens[op].type;
-		printf("Domi op: %d %d\n",op,op_type);
+		// printf("Domi op: %d %d\n",op,op_type);
 		// 单目运算符
 		if(op_type == '!' || op_type == NEG || op_type == REF) {
 			uint32_t val = eval(op+1,q,success);
@@ -252,6 +252,34 @@ uint32_t expr(char *e, bool *success) {
 	/* TODO: Insert codes to evaluate the expression. */
 	// panic("please implement me");
 	/* 寻找 NEG 和 REF 的 tokens */
+	int i;
+	int prev_type;
+	for(i = 0; i < nr_token; ++i) {
+		// 判断 NEG
+		if(tokens[i].type == '-') {
+			if(i == 0) {
+				tokens[i].type = NEG;
+				continue;
+			}
+			prev_type = tokens[i-1].type;
+			if(!(prev_type == ')' || prev_type == ID || prev_type == NUM ||
+			prev_type == REG)) {
+				tokens[i].type = NEG;
+			}
+		}
+		// 判断 REF
+		else if(tokens[i].type == '*') {
+			if(i == 0) {
+				tokens[i].type = REF;
+				continue;
+			}
+			prev_type = tokens[i-1].type;
+			if(!(prev_type == ')' || prev_type == ID || prev_type == NUM ||
+			prev_type == REG)) {
+				tokens[i].type = REF;
+			}
+		}
+	}
 	return eval(0,nr_token-1,success);
 }
 
