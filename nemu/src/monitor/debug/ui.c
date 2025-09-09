@@ -109,15 +109,15 @@ static int cmd_si(char *args) {
 
 // 此处传入的 args 应当就是除了指令之外的全部参数，不需要再分割
 static int cmd_info(char *args) {
-	if(args == NULL) {
-		printf("Invalid command.\n");
-	}
-	else if(*args == 'r') {
+	if(strcmp(args, "r") == 0) {
 		int i;
 		for(i = R_EAX; i <= R_EDI; i ++) {;
 			printf("%s\t0x%08x\t%d\n",regsl[i],reg_l(i),reg_l(i));
 		}
 		printf("eip\t0x%08x\t%d\n",cpu.eip,cpu.eip);
+	}
+	else {
+		printf("Invalid command.\n");
 	}
 	return 0;
 }
