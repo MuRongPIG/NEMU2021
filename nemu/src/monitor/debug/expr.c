@@ -179,9 +179,10 @@ int find_dominant_operator(int p,int q) {
 uint32_t get_reg_val(const char *s);
 
 uint32_t eval(int p,int q,bool *success) {
+	printf("%d %d\n",p,q);
 	if(p > q) {
 		// 表达式异常
-		printf("%d %d\n",p,q);
+		// printf("%d %d\n",p,q);
 		assert(0);
 	}
 	else if(p == q) {
