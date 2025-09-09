@@ -144,7 +144,7 @@ static int cmd_x(char *args) {
 		addr += 16;
 	}
 	if(n % 4 != 0) {
-		printf("0x%08x: ",addr);
+		printf("0x%08x:",addr);
 		for(i = 0; i < n % 4; ++i) {
 			printf(" 0x%08x",swaddr_read(addr,4));
 			addr += 4;
