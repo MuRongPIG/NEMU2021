@@ -204,7 +204,9 @@ uint32_t eval(int p,int q,bool *success) {
 			// 按变量名查找暂时不实现
 			// case ID:
 			default:
-				assert(0);
+				// assert(0);
+				*success = false;
+				return 0;
 		} 
 		*success = true;
 		return val;
