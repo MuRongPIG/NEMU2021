@@ -154,22 +154,6 @@ int find_dominant_operator(int p,int q) {
 	int i;
 	int mx_priority = -1, mx_pos = -1;
 	for(i = p; i <= q; ++i) {
-		// // 必须是运算符
-		// if(tokens[i].type == NUM) continue;
-		// if(tokens[i].type == '(') {
-		// 	dlt++; continue;
-		// }
-		// if(tokens[i].type == ')') {
-		// 	dlt--; continue;
-		// }
-		// // 在括号内时不考虑
-		// if(dlt != 0) continue;
-		// int now_priority = get_op_priority(tokens[i].type);
-		// // 当前优先级最小，且最靠右
-		// if(now_priority >= mx_priority) {
-		// 	mx_priority = now_priority;
-		// 	mx_pos = i;
-		// }
 		switch(tokens[i].type) {
 			case NUM: case REG: case ID: break;
 			case '(': dlt++; break;
@@ -177,8 +161,11 @@ int find_dominant_operator(int p,int q) {
 			default:
 				if(dlt == 0) {
 					int now_priority = get_op_priority(tokens[i].type);
-					if(now_priority >= mx_priority && tokens[i].type != '!' && 
-					tokens[i].type != NEG && tokens[i].type != REF) {
+					// 仅当只存在单目运算符时，才会将其判断为主运算符
+					if(now_priority > mx_priority ||  
+						(now_priority == mx_priority 
+						&& tokens[i].type != '!' && 
+						tokens[i].type != NEG && tokens[i].type != REF)) {
 						mx_priority = now_priority, mx_pos = i;
 					}
 				}
@@ -189,16 +176,30 @@ int find_dominant_operator(int p,int q) {
 	return mx_pos;
 }
 
+uint32_t get_reg_val(const char *s);
+
 uint32_t eval(int p,int q) {
 	if(p > q) {
 		// 表达式异常
 		assert(0);
 	}
 	else if(p == q) {
-		// 表达式仅为一个 token，只可能是数字
-		assert(tokens[p].type == NUM);
-		//字符串转化为数字
-		return strtol(tokens[p].str, NULL, 0);
+		uint32_t val;
+		switch(tokens[p].type) {
+			// 去除寄存器前的 $
+			case REG: 
+				val = get_reg_val(tokens[p].str + 1);
+				break;
+			// 自动按照进制转换
+			case NUM: 
+				val = strtol(tokens[p].str, NULL, 0);
+				break;
+			// 按变量名查找暂时不实现
+			// case ID:
+			default:
+				assert(0);
+		} 
+		return val;
 	}
 	else if(check_parentheses(p,q) == true) {
 		// 表达式被括号包围，

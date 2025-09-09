@@ -42,3 +42,27 @@ void reg_test() {
 	assert(eip_sample == cpu.eip);
 }
 
+// get the val of register
+uint32_t get_reg_val(const char *s) {
+	int i;
+	for(i = R_EAX; i <= R_EDI; ++i) {
+		if(strcmp(regsl[i], s) == 0) {
+			return reg_l(i);
+		}
+	}
+	for(i = R_AX; i <= R_DI; ++i) {
+		if(strcmp(regsw[i], s) == 0) {
+			return reg_w(i);
+		}
+	}
+	for(i = R_AL; i <= R_BH; ++i) {
+		if(strcmp(regsb[i], s) == 0) {
+			return reg_b(i);
+		}
+	}
+	if(strcmp("eip", s) == 0) {
+		return cpu.eip;
+	}
+	Assert(0, "no such register");
+	return 0;
+}
