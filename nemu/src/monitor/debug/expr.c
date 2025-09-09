@@ -32,12 +32,11 @@ static struct rule {
 	{"!=", NEQ},					// not equal
 	{"\\&\\&", AND},				// and
 	{"\\|\\|", OR},					// or
-	{"!", '!'},
+	{"\\!", '!'},
 	{"0x[0-9a-fA-F]{1,8}", NUM},	// HEX
 	{"[1-9]+[0-9]*", NUM},			// DEC
-	{""},
-	{"(", '('},					// left bracket
-	{")", ')'},					// right bracket
+	{"\\(", '('},					// left bracket
+	{"\\)", ')'},					// right bracket
 
 	
 	
