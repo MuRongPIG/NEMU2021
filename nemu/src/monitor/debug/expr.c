@@ -178,7 +178,7 @@ int find_dominant_operator(int p,int q) {
 
 uint32_t get_reg_val(const char *s);
 
-uint32_t eval(int p,int q) {
+uint32_t eval(int p,int q,bool *success) {
 	if(p > q) {
 		// 表达式异常
 		assert(0);
@@ -199,22 +199,43 @@ uint32_t eval(int p,int q) {
 			default:
 				assert(0);
 		} 
+		*success = true;
 		return val;
 	}
 	else if(check_parentheses(p,q) == true) {
 		// 表达式被括号包围，
 		// 此时去掉最外层括号，表达式不变
-		return eval(p+1,q-1);
+		return eval(p+1,q-1,success);
 	}
 	else {
 		int op = find_dominant_operator(p,q);
-		int Lval = eval(p,op-1), Rval = eval(op+1,q);
 		int op_type = tokens[op].type;
+		// 单目运算符
+		if(op_type == '!' || op_type == NEG || op_type == REF) {
+			uint32_t val = eval(op+1,q,success);
+			switch(op_type) {
+				case '!': 
+					return !val;
+				case NEG: 
+					return -val;
+				case REF: 
+					// current_sreg = R_DS;  // 暂时注释掉，但保留以供将来使用
+					return swaddr_read(val, 4);
+				
+				default: assert(0);
+			}
+		}
+		uint32_t Lval = eval(p,op-1,success);
+		uint32_t Rval = eval(op+1,q,success);
 		switch(op_type) {
 			case '+': return Lval + Rval;
 			case '-': return Lval - Rval;
 			case '*': return Lval * Rval;
 			case '/': return Lval / Rval;
+			case EQ: return Lval == Rval;
+			case NEQ: return Lval != Rval;
+			case AND: return Lval && Rval;
+			case OR: return Lval || Rval;
 			default: assert(0);
 		}
 	}
@@ -227,7 +248,7 @@ uint32_t expr(char *e, bool *success) {
 	}
 	/* TODO: Insert codes to evaluate the expression. */
 	// panic("please implement me");
-	*success = true;
-	return eval(0,nr_token-1);
+	/* 寻找 NEG 和 REF 的 tokens */
+	return eval(0,nr_token-1,success);
 }
 
