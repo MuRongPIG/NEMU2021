@@ -204,10 +204,10 @@ uint32_t eval(int p,int q) {
 		return eval(p+1,q-1);
 	}
 	else {
-		int domi_pos = find_dominant_operator(p,q);
-		int Lval = eval(p,domi_pos-1), Rval = eval(domi_pos+1,q);
-		int op = tokens[domi_pos].type;
-		switch(op) {
+		int op = find_dominant_operator(p,q);
+		int Lval = eval(p,op-1), Rval = eval(op+1,q);
+		int op_type = tokens[op].type;
+		switch(op_type) {
 			case '+': return Lval + Rval;
 			case '-': return Lval - Rval;
 			case '*': return Lval * Rval;
@@ -222,9 +222,8 @@ uint32_t expr(char *e, bool *success) {
 		*success = false;
 		return 0;
 	}
-
 	/* TODO: Insert codes to evaluate the expression. */
-	panic("please implement me");
-	return 0;
+	// panic("please implement me");
+	return eval(0,nr_token);
 }
 

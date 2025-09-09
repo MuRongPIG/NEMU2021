@@ -44,6 +44,8 @@ static int cmd_info(char *args);
 
 static int cmd_x(char *args);
 
+static int cmd_p(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -61,6 +63,7 @@ static struct {
 	},
 	{ "info", "Generic command for showing things about the program being debugged.", cmd_info },
 	{ "x", "Scan the memory." , cmd_x},
+	{ "p", "Calculate an expression." , cmd_p},
 	/* TODO: Add more commands */
 };
 
@@ -150,6 +153,20 @@ static int cmd_x(char *args) {
 			addr += 4;
 		}
 		printf("\n");
+	}
+	return 0;
+}
+
+static int cmd_p(char *args) {
+	bool success;
+	if(args) {
+		uint32_t res = expr(args, &success);
+		if(success) {
+			printf("0x%08x(%d)\n",res,res);
+		}
+		else {
+			printf("Bad expression.\n");
+		}
 	}
 	return 0;
 }
