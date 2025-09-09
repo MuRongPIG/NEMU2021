@@ -120,20 +120,23 @@ static bool make_token(char *e) {
 }
 
 // 判断表达式是否被一对匹配的括号包围，同时检查表达式的括号是否合法
-bool check_parentheses(int p,int q) {
+bool check_parentheses(int p,int q,bool* success) {
 	// 首先判断是否最外侧是一对括号
 	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
 	// 判断括号序列是否合法
+	*success = true;
 	int dlt = 0;
 	int i;
 	for(i = p; i <= q; ++i) {
 		if(tokens[i].type == '(') dlt++;
 		if(tokens[i].type == ')') dlt--;
 		// 括号序列不合法时，dlt < 0
-		assert(dlt >= 0);
+		// assert(dlt >= 0);
+		if(dlt < 0) success = false;
 	}
 	// dlt != 0 时不合法
-	assert(dlt == 0);
+	// assert(dlt == 0);
+	if(dlt != 0) success = false;
 	return true;
 }
 
@@ -149,7 +152,7 @@ int get_op_priority(int op) {
 	}
 }
 
-int find_dominant_operator(int p,int q) {
+int find_dominant_operator(int p,int q,bool *success) {
 	int dlt = 0;
 	int i;
 	int mx_priority = -1, mx_pos = -1;
@@ -172,23 +175,27 @@ int find_dominant_operator(int p,int q) {
 				break;
 		}
 	}
-	assert(mx_pos != -1);
+	// assert(mx_pos != -1);
+	*success = (mx_pos != -1);
 	return mx_pos;
 }
 
-uint32_t get_reg_val(const char *s);
+uint32_t get_reg_val(const char *s,bool *success);
 
 uint32_t eval(int p,int q,bool *success) {
 	if(p > q) {
 		// 表达式异常
 		assert(0);
+		*success = false;
+		return 0;
 	}
 	else if(p == q) {
 		uint32_t val;
 		switch(tokens[p].type) {
 			// 去除寄存器前的 $
 			case REG: 
-				val = get_reg_val(tokens[p].str + 1);
+				val = get_reg_val(tokens[p].str + 1,success);
+				if(!*success) { return 0; }
 				break;
 			// 自动按照进制转换
 			case NUM: 
@@ -202,17 +209,20 @@ uint32_t eval(int p,int q,bool *success) {
 		*success = true;
 		return val;
 	}
-	else if(check_parentheses(p,q) == true) {
+	else if(check_parentheses(p,q,success) == true) {
 		// 表达式被括号包围，
 		// 此时去掉最外层括号，表达式不变
+		if(!*success) { return 0; }
 		return eval(p+1,q-1,success);
 	}
 	else {
-		int op = find_dominant_operator(p,q);
+		int op = find_dominant_operator(p,q,success);
+		if(!*success) { return 0; }
 		int op_type = tokens[op].type;
 		// 单目运算符
 		if(op_type == '!' || op_type == NEG || op_type == REF) {
 			uint32_t val = eval(op+1,q,success);
+			if(!*success) { return 0; }
 			switch(op_type) {
 				case '!': 
 					return !val;
@@ -226,7 +236,9 @@ uint32_t eval(int p,int q,bool *success) {
 			}
 		}
 		uint32_t Lval = eval(p,op-1,success);
+		if(!*success) { return 0; }
 		uint32_t Rval = eval(op+1,q,success);
+		if(!*success) { return 0; }
 		switch(op_type) {
 			case '+': return Lval + Rval;
 			case '-': return Lval - Rval;
