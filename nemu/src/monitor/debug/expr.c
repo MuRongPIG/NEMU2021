@@ -34,13 +34,11 @@ static struct rule {
 	{"\\|\\|", OR},					// or
 	{"\\!", '!'},
 	{"0x[0-9a-fA-F]{1,8}", NUM},	// HEX
-	{"[1-9]+[0-9]*", NUM},			// DEC
+	{"[1-9]+[0-9]{1-10}", NUM},		// DEC
+	{"\\$[a-z]{1-31}", REG},		// register name
+	{"[a-zA-Z_]{1,31}", ID},		// identifiers
 	{"\\(", '('},					// left bracket
 	{"\\)", ')'},					// right bracket
-
-	
-	
-
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -97,35 +95,18 @@ static bool make_token(char *e) {
 
 				switch(rules[i].token_type) {
 					case NOTYPE: break;
-					case '+':
-						tokens[nr_token++].type = '+';
-						break;
-					case '-':
-						tokens[nr_token++].type = '-';
-						break;
-					case '*':
-						tokens[nr_token++].type = '*';
-						break;
-					case '/':
-						tokens[nr_token++].type = '/';
-						break;
-					case '(':
-						tokens[nr_token++].type = '(';
-						break;
-					case ')':
-						tokens[nr_token++].type = ')';
-						break;
-					// 十进制整数，除了记录 token 类型，还需把字符串存储起来
+					// 除了记录 token 类型，还需把字符串存储起来
 					// 断言长度不超过 str 数组存储上限
-					case NUM:
-						tokens[nr_token].type = NUM;
+					case NUM: 
+					case ID: 
+					case REG:
 						Assert(substr_len < 32, "length of int is too long (> 31)");
 						strncpy(tokens[nr_token].str, substr_start, substr_len);
-						tokens[nr_token++].str[substr_len] = '\0';
+						tokens[nr_token].str[substr_len] = '\0';
 						break;
-					default: break;//panic("please implement me");
+					default: 
+						tokens[nr_token++].type = rules[i].token_type;
 				}
-
 				break;
 			}
 		}
