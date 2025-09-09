@@ -211,8 +211,8 @@ uint32_t eval(int p,int q,bool *success) {
 	}
 	else {
 		int op = find_dominant_operator(p,q);
-		printf("Domi op: %d\n",op);
 		int op_type = tokens[op].type;
+		printf("Domi op: %d %d\n",op,op_type);
 		// 单目运算符
 		if(op_type == '!' || op_type == NEG || op_type == REF) {
 			uint32_t val = eval(op+1,q,success);
