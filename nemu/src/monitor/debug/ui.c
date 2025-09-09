@@ -52,7 +52,7 @@ static struct {
 	{ "q", "Exit NEMU", cmd_q },
 	{ 
 		"si", 
-		"Step one instruction exactly.\n"
+		"\tStep one instruction exactly.\n"
 		"\tUsage: si [N]\n"
 		"\tArgument N means step N times (n till program stops for another reason).",
 		cmd_si
