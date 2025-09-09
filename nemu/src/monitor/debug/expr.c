@@ -100,9 +100,10 @@ static bool make_token(char *e) {
 					case NUM: 
 					case ID: 
 					case REG:
-						Assert(substr_len < 32, "length of int is too long (> 31)");
-						strncpy(tokens[nr_token].str, substr_start, substr_len);
-						tokens[nr_token].str[substr_len] = '\0';
+						// Assert(substr_len < 32, "length of int is too long (> 31)");
+						// strncpy(tokens[nr_token].str, substr_start, substr_len);
+						// tokens[nr_token].str[substr_len] = '\0';
+						sprintf(tokens[nr_token].str, "%.*s", substr_len, substr_start);
 					default: 
 						tokens[nr_token++].type = rules[i].token_type;
 				}
