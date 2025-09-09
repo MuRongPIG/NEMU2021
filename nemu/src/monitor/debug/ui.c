@@ -105,8 +105,16 @@ static int cmd_si(char *args) {
 static int cmd_info(char *args) {
 	char *arg = strtok(NULL, " ");
 	if(strcmp(arg, "r") == 0) {
-		
+		int i;
+		for(i = R_EAX; i <= R_EDI; i ++) {
+			// sample[i] = rand();
+			// reg_l(i) = sample[i];
+			// assert(reg_w(i) == (sample[i] & 0xffff));
+			assert(i >= 0 && i < 8);
+			printf("%s\t0x%x\t%d\n",regsl[i],reg_l(i),reg_l(i));
+		}
 	}
+	return 0;
 }
 
 void ui_mainloop() {
