@@ -34,7 +34,7 @@ static struct rule {
 	{"\\|\\|", OR},					// or
 	{"\\!", '!'},
 	{"0x[0-9a-fA-F]{1,8}", NUM},	// HEX
-	{"[1-9]+[0-9]{1,10}", NUM},		// DEC
+	{"[1-9]+[0-9]", NUM},		// DEC
 	{"\\$[a-z]{1,31}", REG},		// register name
 	{"[a-zA-Z_]{1,31}", ID},		// identifiers
 	{"\\(", '('},					// left bracket
