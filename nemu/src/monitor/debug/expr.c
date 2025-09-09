@@ -148,7 +148,10 @@ int get_op_priority(int op,bool *success) {
 		case EQ: case NEQ: return 4;
 		case AND: return 9;
 		case OR: return 10;
-		default: assert(0);
+		default: 
+			// assert(0);
+			*success = 0;
+			return 0;
 	}
 }
 
