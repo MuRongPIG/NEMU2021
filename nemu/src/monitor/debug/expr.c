@@ -139,9 +139,12 @@ bool check_parentheses(int p,int q) {
 
 int get_op_priority(int op) {
 	switch(op) {
+		case '!': case NEG: case REF: return 0;
 		case '*': case '/': return 1;
 		case '+': case '-': return 2;
-		case EQ: return 4;
+		case EQ: case NEQ: return 4;
+		case AND: return 9;
+		case OR: return 10;
 		default: assert(0);
 	}
 }
@@ -151,21 +154,35 @@ int find_dominant_operator(int p,int q) {
 	int i;
 	int mx_priority = -1, mx_pos = -1;
 	for(i = p; i <= q; ++i) {
-		// 必须是运算符
-		if(tokens[i].type == NUM) continue;
-		if(tokens[i].type == '(') {
-			dlt++; continue;
-		}
-		if(tokens[i].type == ')') {
-			dlt--; continue;
-		}
-		// 在括号内时不考虑
-		if(dlt != 0) continue;
-		int now_priority = get_op_priority(tokens[i].type);
-		// 当前优先级最小，且最靠右
-		if(now_priority >= mx_priority) {
-			mx_priority = now_priority;
-			mx_pos = i;
+		// // 必须是运算符
+		// if(tokens[i].type == NUM) continue;
+		// if(tokens[i].type == '(') {
+		// 	dlt++; continue;
+		// }
+		// if(tokens[i].type == ')') {
+		// 	dlt--; continue;
+		// }
+		// // 在括号内时不考虑
+		// if(dlt != 0) continue;
+		// int now_priority = get_op_priority(tokens[i].type);
+		// // 当前优先级最小，且最靠右
+		// if(now_priority >= mx_priority) {
+		// 	mx_priority = now_priority;
+		// 	mx_pos = i;
+		// }
+		switch(tokens[i].type) {
+			case NUM: case REG: case ID: break;
+			case '(': dlt++; break;
+			case ')': dlt--; break;
+			default:
+				if(dlt == 0) {
+					int now_priority = get_op_priority(tokens[i].type);
+					if(now_priority >= mx_priority && tokens[i].type != '!' && 
+					tokens[i].type != NEG && tokens[i].type != REF) {
+						mx_priority = now_priority, mx_pos = i;
+					}
+				}
+				break;
 		}
 	}
 	assert(mx_pos != -1);
