@@ -161,7 +161,7 @@ int find_dominant_operator(int p,int q) {
 			default:
 				if(dlt == 0) {
 					int now_priority = get_op_priority(tokens[i].type);
-					// 仅当只存在单目运算符时，才会将其判断为主运算符
+					// 单目运算符左侧优先作为主运算符，特殊判断
 					if(now_priority > mx_priority ||  
 						(now_priority == mx_priority 
 						&& tokens[i].type != '!' && 
@@ -179,10 +179,8 @@ int find_dominant_operator(int p,int q) {
 uint32_t get_reg_val(const char *s);
 
 uint32_t eval(int p,int q,bool *success) {
-	// printf("%d %d\n",p,q);
 	if(p > q) {
 		// 表达式异常
-		// printf("%d %d\n",p,q);
 		assert(0);
 	}
 	else if(p == q) {
@@ -212,7 +210,6 @@ uint32_t eval(int p,int q,bool *success) {
 	else {
 		int op = find_dominant_operator(p,q);
 		int op_type = tokens[op].type;
-		// printf("Domi op: %d %d\n",op,op_type);
 		// 单目运算符
 		if(op_type == '!' || op_type == NEG || op_type == REF) {
 			uint32_t val = eval(op+1,q,success);
