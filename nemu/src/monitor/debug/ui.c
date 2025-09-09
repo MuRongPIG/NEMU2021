@@ -97,22 +97,27 @@ static int cmd_si(char *args) {
 	else {
 		cnt = atoi(arg);
 	}
-	assert(cnt > 0);
-	cpu_exec(cnt);
+	// assert(cnt > 0);
+	if(cnt <= 0) {
+		printf("The times should be a positive integer.\n");
+	}
+	else {
+		cpu_exec(cnt);
+	}
 	return 0;
 }
 
+// 此处传入的 args 应当就是除了指令之外的全部参数，不需要再分割
 static int cmd_info(char *args) {
-	char *arg = strtok(NULL, " ");
-	if(strcmp(arg, "r") == 0) {
+	if(args == NULL) {
+		printf("Invalid command.\n");
+	}
+	else if(*args == 'r') {
 		int i;
-		for(i = R_EAX; i <= R_EDI; i ++) {
-			// sample[i] = rand();
-			// reg_l(i) = sample[i];
-			// assert(reg_w(i) == (sample[i] & 0xffff));
-			assert(i >= 0 && i < 8);
-			printf("%s\t0x%x\t%d\n",regsl[i],reg_l(i),reg_l(i));
+		for(i = R_EAX; i <= R_EDI; i ++) {;
+			printf("%s\t0x%08x\t%d\n",regsl[i],reg_l(i),reg_l(i));
 		}
+		printf("eip\t0x%08x\t%d\n",cpu.eip,cpu.eip);
 	}
 	return 0;
 }
