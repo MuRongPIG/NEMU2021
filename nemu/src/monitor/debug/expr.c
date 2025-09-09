@@ -149,9 +149,7 @@ int get_op_priority(int op,bool *success) {
 		case AND: return 9;
 		case OR: return 10;
 		default: 
-			// assert(0);
-			*success = 0;
-			return 0;
+			assert(0);
 	}
 }
 
@@ -187,7 +185,6 @@ int find_dominant_operator(int p,int q,bool *success) {
 uint32_t get_reg_val(const char *s,bool *success);
 
 uint32_t eval(int p,int q,bool *success) {
-	printf("%d %d\n",p,q);
 	if(p > q) {
 		// 表达式异常
 		// assert(0);
