@@ -143,13 +143,12 @@ static int cmd_x(char *args) {
 	// sscanf(args,"%d 0x%x",&n,&addr);
 
 	// 从 args 中提取第一个 token
-	char *arg = strtok(args, " ");
+	char *arg = strtok(NULL, " ");
 	if(arg == NULL) {
 		printf("Require more arguments.\n");
 		return 0;
 	}
 	n = atoi(arg);
-
 	// 提取第二个 token
 	if(args == NULL) {
 		printf("Require more arguments.\n");
