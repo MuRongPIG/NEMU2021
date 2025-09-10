@@ -131,41 +131,6 @@ static int cmd_info(char *args) {
 	return 0;
 }
 
-// 目前只实现读取十六进制整数作为表达式的值，之后需要将其修改为读取表达式并求值
-// static int cmd_x(char *args) {
-// 	char *arg = strtok(NULL, " ");
-// 	if(arg == NULL) {
-// 		printf("Require more arguments.\n");
-// 		return 0;
-// 	}
-// 	Log("%s\n",arg + strlen(arg) + 1);
-// 	int n;
-// 	swaddr_t addr;
-// 	sscanf(arg, "%d", &n);
-// 	bool success;
-// 	addr = expr(arg + strlen(arg) + 1, &success);
-// 	if(!success) {
-// 		printf("Bad expression.\n");
-// 		return 0;
-// 	}
-// 	Log("cmd_x args: %d %d\n",n,addr);
-// 	int i;
-// 	// 四个四个输出
-// 	for(i = 0; i < n/4; ++i) {
-// 		printf("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n",addr,swaddr_read(addr,4),swaddr_read(addr+4,4),swaddr_read(addr+8,4),swaddr_read(addr+12,4));
-// 		addr += 16;
-// 	}
-// 	if(n % 4 != 0) {
-// 		printf("0x%08x:",addr);
-// 		for(i = 0; i < n % 4; ++i) {
-// 			printf(" 0x%08x",swaddr_read(addr,4));
-// 			addr += 4;
-// 		}
-// 		printf("\n");
-// 	}
-// 	return 0;
-// }
-
 static int cmd_x(char *args) {
     // 获取数字部分（第一个 token）
     char *num_str = strtok(NULL, " ");
