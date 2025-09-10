@@ -122,6 +122,7 @@ static bool make_token(char *e) {
 
 // 判断表达式是否被一对匹配的括号包围，同时检查表达式的括号是否合法
 bool check_parentheses(int p,int q,bool* success) {
+	if(p >= q) return false;
 	// 首先判断是否最外侧是一对括号
 	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
 	// 判断括号序列是否合法
@@ -138,7 +139,20 @@ bool check_parentheses(int p,int q,bool* success) {
 	// dlt != 0 时不合法
 	assert(dlt == 0);
 	if(dlt != 0) success = false;
-	return true;
+	// 判断最外侧两括号是否匹配，只需要判断去掉两括号后的表达式是否括号匹配
+	// 只有内层括号表达式仍匹配时，最外层才是一对匹配的括号
+	bool ok = true;
+	if(p+1 <= q-1) {
+		dlt = 0;
+		for(i = p+1; i <= q-1; ++i) {
+			if(tokens[i].type == '(') dlt++;
+			if(tokens[i].type == ')') dlt--;
+			// 括号序列不合法时，dlt < 0
+			if(dlt < 0) ok = false;
+		}
+		if(dlt != 0) ok = false;
+	}
+	return ok;
 }
 
 int get_op_priority(int op,bool *success) {
