@@ -7,6 +7,7 @@
 #include <regex.h>
 #include <stdlib.h>
 
+// 接着 ASCII 码对正则 token 编码
 enum {
 	NOTYPE = 256, EQ,
 
