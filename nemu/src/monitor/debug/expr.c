@@ -181,6 +181,9 @@ int find_dominant_operator(int p,int q,bool *success) {
 				break;
 		}
 	}
+	if(mx_pos == -1) {
+		Log("%d %d\n",p,q);
+	}
 	assert(mx_pos != -1);
 	*success = (mx_pos != -1);
 	return mx_pos;
