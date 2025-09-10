@@ -161,7 +161,7 @@ bool check_parentheses(int p,int q,bool* success) {
 	// 判断最外侧两括号是否匹配，只需要判断去掉两括号后的表达式是否括号匹配
 	// 只有内层括号表达式仍匹配时，最外层才是一对匹配的括号
 	bool ok = true;
-	if(p+1 <= q-1) ok = check_vaild_parentheses(p,q);
+	if(p+1 <= q-1) ok = check_vaild_parentheses(p+1,q-1);
 	return ok;
 }
 
