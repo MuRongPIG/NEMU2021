@@ -152,6 +152,7 @@ static int cmd_x(char *args) {
 		printf("Bad expression.\n");
 		return 0;
 	}
+	Log("cmd_x args: %d %d\n",n,addr);
 	int i;
 	// 四个四个输出
 	for(i = 0; i < n/4; ++i) {
