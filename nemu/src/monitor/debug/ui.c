@@ -150,14 +150,13 @@ static int cmd_x(char *args) {
 	n = atoi(arg);
 
 	// 提取第二个 token
-	arg = strtok(NULL, " ");
-	if(arg == NULL) {
+	if(args == NULL) {
 		printf("Require more arguments.\n");
 		return 0;
 	}
 
 	bool success;
-	addr = expr(arg,&success);
+	addr = expr(args,&success);
 	if(!success) {
 		printf("Bad expression.\n");
 		return 0;
