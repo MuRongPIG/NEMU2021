@@ -141,7 +141,7 @@ bool check_vaild_parentheses(int p,int q) {
 bool check_parentheses(int p,int q,bool* success) {
 	// 判断括号序列是否合法
 	*success = check_vaild_parentheses(p,q);
-	assert(*success);
+	// assert(*success);
 
 	// 首先判断是否最外侧是一对括号
 	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
