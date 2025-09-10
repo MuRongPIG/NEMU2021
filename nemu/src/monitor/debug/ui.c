@@ -140,19 +140,31 @@ static int cmd_x(char *args) {
 	int n;
 	swaddr_t addr;
 	// sscanf(args,"%d 0x%x",&n,&addr);
-	char *arg = strtok(NULL, " ");
-	n = atoi(arg);
-	if(args == NULL) {
+
+	// 从 args 中提取第一个 token
+	char *arg = strtok(args, " ");
+	if(arg == NULL) {
 		printf("Require more arguments.\n");
 		return 0;
 	}
+	n = atoi(arg);
+
+	// 提取第二个 token
+	arg = strtok(NULL, " ");
+	if(arg == NULL) {
+		printf("Require more arguments.\n");
+		return 0;
+	}
+
 	bool success;
-	addr = expr(args,&success);
+	addr = expr(arg,&success);
 	if(!success) {
 		printf("Bad expression.\n");
 		return 0;
 	}
+
 	Log("cmd_x args: %d %d\n",n,addr);
+	
 	int i;
 	// 四个四个输出
 	for(i = 0; i < n/4; ++i) {
