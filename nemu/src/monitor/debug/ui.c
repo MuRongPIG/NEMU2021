@@ -132,19 +132,70 @@ static int cmd_info(char *args) {
 }
 
 // 目前只实现读取十六进制整数作为表达式的值，之后需要将其修改为读取表达式并求值
-// static int cmd_x(char *args) {
-// 	int n;
-// 	swaddr_t addr;
-// 	char *arg;
-// 	sscanf(args,"%d %s",&n,arg);
-// 	bool success;
-// 	addr = expr(arg,&success);
-// 	if(!success) {
-// 		printf("Bad expression.\n");
-// 		return 0;
-// 	}
+static int cmd_x(char *args) {
+	char *arg = strtok(NULL, " ");
+	if(arg == NULL) {
+		printf("Require more arguments.\n");
+		return 0;
+	}
+	int n;
+	swaddr_t addr;
+	sscanf(arg, "%d", &n);
+	bool success;
+	addr = expr(arg + strlen(arg) + 1, &success);
+	if(!success) {
+		printf("Bad expression.\n");
+		return 0;
+	}
+	Log("cmd_x args: %d %d\n",n,addr);
+	int i;
+	// 四个四个输出
+	for(i = 0; i < n/4; ++i) {
+		printf("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n",addr,swaddr_read(addr,4),swaddr_read(addr+4,4),swaddr_read(addr+8,4),swaddr_read(addr+12,4));
+		addr += 16;
+	}
+	if(n % 4 != 0) {
+		printf("0x%08x:",addr);
+		for(i = 0; i < n % 4; ++i) {
+			printf(" 0x%08x",swaddr_read(addr,4));
+			addr += 4;
+		}
+		printf("\n");
+	}
+	return 0;
+}
 
-// 	Log("cmd_x args: %d %d\n",n,addr);
+// static int cmd_x(char *args) {
+//     if(args == NULL) {
+//         printf("Require more arguments.\n");
+//         return 0;
+//     }
+//     int n;
+//     // 读取第一个整数和它在字符串中的位置信息
+//     int chars_read;
+//     int count = sscanf(args, "%d%n", &n, &chars_read);
+//     if(count != 1) {
+//         printf("Require integer as first argument.\n");
+//         return 0;
+//     }
+//     // 表达式部分从读取的字符数之后开始
+//     char *expr_start = args + chars_read;
+//     // 跳过可能的空格
+//     while(*expr_start == ' ') {
+//         expr_start++;
+//     }
+//     if(*expr_start == '\0') {
+//         printf("Require address expression.\n");
+//         return 0;
+//     }
+//     bool success;
+//     swaddr_t addr = expr(expr_start, &success);
+//     if(!success) {
+//         printf("Bad expression: %s\n", expr_start);
+//         return 0;
+//     }
+
+//     Log("cmd_x args: %d %d\n",n,addr);
 	
 // 	int i;
 // 	// 四个四个输出
@@ -162,59 +213,6 @@ static int cmd_info(char *args) {
 // 	}
 // 	return 0;
 // }
-
-static int cmd_x(char *args) {
-    if(args == NULL) {
-        printf("Require more arguments.\n");
-        return 0;
-    }
-    
-    int n;
-    // 读取第一个整数和它在字符串中的位置信息
-    int chars_read;
-    int count = sscanf(args, "%d%n", &n, &chars_read);
-    if(count != 1) {
-        printf("Require integer as first argument.\n");
-        return 0;
-    }
-    
-    // 表达式部分从读取的字符数之后开始
-    char *expr_start = args + chars_read;
-    // 跳过可能的空格
-    while(*expr_start == ' ') {
-        expr_start++;
-    }
-    
-    if(*expr_start == '\0') {
-        printf("Require address expression.\n");
-        return 0;
-    }
-    
-    bool success;
-    swaddr_t addr = expr(expr_start, &success);
-    if(!success) {
-        printf("Bad expression: %s\n", expr_start);
-        return 0;
-    }
-
-    Log("cmd_x args: %d %d\n",n,addr);
-	
-	int i;
-	// 四个四个输出
-	for(i = 0; i < n/4; ++i) {
-		printf("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n",addr,swaddr_read(addr,4),swaddr_read(addr+4,4),swaddr_read(addr+8,4),swaddr_read(addr+12,4));
-		addr += 16;
-	}
-	if(n % 4 != 0) {
-		printf("0x%08x:",addr);
-		for(i = 0; i < n % 4; ++i) {
-			printf(" 0x%08x",swaddr_read(addr,4));
-			addr += 4;
-		}
-		printf("\n");
-	}
-	return 0;
-}
 
 static int cmd_p(char *args) {
 	bool success;
