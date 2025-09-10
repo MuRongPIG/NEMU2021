@@ -120,38 +120,48 @@ static bool make_token(char *e) {
 	return true; 
 }
 
-// 判断表达式是否被一对匹配的括号包围，同时检查表达式的括号是否合法
-bool check_parentheses(int p,int q,bool* success) {
-	if(p >= q) return false;
-	// 首先判断是否最外侧是一对括号
-	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
-	// 判断括号序列是否合法
-	*success = true;
-	int dlt = 0;
+bool check_vaild_parentheses(int p,int q) {
+	bool ok = true;
 	int i;
+	int dlt = 0;
 	for(i = p; i <= q; ++i) {
 		if(tokens[i].type == '(') dlt++;
 		if(tokens[i].type == ')') dlt--;
 		// 括号序列不合法时，dlt < 0
-		// assert(dlt >= 0);
-		if(dlt < 0) success = false;
+		if(dlt < 0) ok = false;
 	}
-	// dlt != 0 时不合法
-	// assert(dlt == 0);
-	if(dlt != 0) success = false;
+	if(dlt != 0) ok = false;
+	return ok;
+}
+
+// 判断表达式是否被一对匹配的括号包围，同时检查表达式的括号是否合法
+bool check_parentheses(int p,int q,bool* success) {
+	// 判断括号序列是否合法
+	// *success = true;
+	// int dlt = 0;
+	// int i;
+	// for(i = p; i <= q; ++i) {
+	// 	if(tokens[i].type == '(') dlt++;
+	// 	if(tokens[i].type == ')') dlt--;
+	// 	// 括号序列不合法时，dlt < 0
+	// 	// assert(dlt >= 0);
+	// 	if(dlt < 0) success = false;
+	// }
+	// // dlt != 0 时不合法
+	// // assert(dlt == 0);
+	// if(dlt != 0) success = false;
+
+	*success = check_vaild_parentheses(p,q);
+	assert(*success);
+
+	// 首先判断是否最外侧是一对括号
+	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
+	
+	
 	// 判断最外侧两括号是否匹配，只需要判断去掉两括号后的表达式是否括号匹配
 	// 只有内层括号表达式仍匹配时，最外层才是一对匹配的括号
 	bool ok = true;
-	if(p+1 <= q-1) {
-		dlt = 0;
-		for(i = p+1; i <= q-1; ++i) {
-			if(tokens[i].type == '(') dlt++;
-			if(tokens[i].type == ')') dlt--;
-			// 括号序列不合法时，dlt < 0
-			if(dlt < 0) ok = false;
-		}
-		if(dlt != 0) ok = false;
-	}
+	if(p+1 <= q-1) ok = check_vaild_parentheses(p,q);
 	return ok;
 }
 

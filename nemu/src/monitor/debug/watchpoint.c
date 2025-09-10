@@ -3,7 +3,10 @@
 
 #define NR_WP 32
 
+// 监视点“池”
 static WP wp_pool[NR_WP];
+// 链表 head: 组织使用中的监视点
+// 链表 free_: 组织空闲的监视点
 static WP *head, *free_;
 
 void init_wp_pool() {
