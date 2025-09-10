@@ -133,11 +133,11 @@ bool check_parentheses(int p,int q,bool* success) {
 		if(tokens[i].type == '(') dlt++;
 		if(tokens[i].type == ')') dlt--;
 		// 括号序列不合法时，dlt < 0
-		assert(dlt >= 0);
+		// assert(dlt >= 0);
 		if(dlt < 0) success = false;
 	}
 	// dlt != 0 时不合法
-	assert(dlt == 0);
+	// assert(dlt == 0);
 	if(dlt != 0) success = false;
 	// 判断最外侧两括号是否匹配，只需要判断去掉两括号后的表达式是否括号匹配
 	// 只有内层括号表达式仍匹配时，最外层才是一对匹配的括号
@@ -165,7 +165,7 @@ int get_op_priority(int op,bool *success) {
 		case AND: return 9;
 		case OR: return 10;
 		default: 
-			assert(0);
+			// assert(0);
 			*success = false;
 			return 0;
 	}
@@ -195,7 +195,7 @@ int find_dominant_operator(int p,int q,bool *success) {
 				break;
 		}
 	}
-	assert(mx_pos != -1);
+	// assert(mx_pos != -1);
 	*success = (mx_pos != -1);
 	return mx_pos;
 }
@@ -203,10 +203,10 @@ int find_dominant_operator(int p,int q,bool *success) {
 uint32_t get_reg_val(const char *s,bool *success);
 
 uint32_t eval(int p,int q,bool *success) {
-	Log("%d %d\n",p,q);
+	// Log("%d %d\n",p,q);
 	if(p > q) {
 		// 表达式异常
-		assert(0);
+		// assert(0);
 		*success = false;
 		return 0;
 	}
@@ -225,7 +225,7 @@ uint32_t eval(int p,int q,bool *success) {
 			// 按变量名查找暂时不实现
 			// case ID:
 			default:
-				assert(0);
+				// assert(0);
 				*success = false;
 				return 0;
 		} 
@@ -256,7 +256,7 @@ uint32_t eval(int p,int q,bool *success) {
 					return swaddr_read(val, 4);
 				
 				default: 
-					assert(0);
+					// assert(0);
 					*success = false;
 					return 0;
 			}
@@ -275,7 +275,7 @@ uint32_t eval(int p,int q,bool *success) {
 			case AND: return Lval && Rval;
 			case OR: return Lval || Rval;
 			default: 
-				assert(0);
+				// assert(0);
 				*success = false;
 				return 0;
 		}
