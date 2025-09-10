@@ -137,6 +137,7 @@ static int cmd_x(char *args) {
 		printf("Require more arguments.\n");
 		return 0;
 	}
+	Log("cmd_x args: %s",args);
 	int n;
 	swaddr_t addr;
 	// sscanf(args,"%d 0x%x",&n,&addr);
