@@ -139,7 +139,19 @@ static int cmd_x(char *args) {
 	}
 	int n;
 	swaddr_t addr;
-	sscanf(args,"%d 0x%x",&n,&addr);
+	// sscanf(args,"%d 0x%x",&n,&addr);
+	char *arg = strtok(NULL, " ");
+	n = atoi(arg);
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+		return 0;
+	}
+	bool success;
+	addr = expr(args,&success);
+	if(!success) {
+		printf("Bad expression.\n");
+		return 0;
+	}
 	int i;
 	// 四个四个输出
 	for(i = 0; i < n/4; ++i) {
@@ -159,7 +171,10 @@ static int cmd_x(char *args) {
 
 static int cmd_p(char *args) {
 	bool success;
-	if(args) {
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+	}
+	else {
 		uint32_t res = expr(args, &success);
 		if(success) {
 			printf("0x%08x(%d)\n",res,res);

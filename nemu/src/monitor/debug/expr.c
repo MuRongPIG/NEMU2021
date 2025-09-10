@@ -19,11 +19,9 @@ static struct rule {
 	char *regex;
 	int token_type;
 } rules[] = {
-
 	/* TODO: Add more rules.
 	 * Pay attention to the precedence level of different rules.
 	 */
-
 	{" +",	NOTYPE},				// spaces
 	{"\\+", '+'},					// plus
 	{"-", '-'},						// subtraction
@@ -53,7 +51,6 @@ void init_regex() {
 	int i;
 	char error_msg[128];
 	int ret;
-
 	for(i = 0; i < NR_REGEX; i ++) {
 		// 编译正则表达式
 		ret = regcomp(&re[i], rules[i].regex, REG_EXTENDED);
