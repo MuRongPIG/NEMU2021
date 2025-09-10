@@ -86,7 +86,7 @@ static bool make_token(char *e) {
 				char *substr_start = e + position;
 				int substr_len = pmatch.rm_eo;
 
-				Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
+				// Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
 				position += substr_len;
 
 				/* TODO: Now a new token is recognized with rules[i]. Add codes
@@ -158,6 +158,7 @@ int get_op_priority(int op,bool *success) {
 }
 
 int find_dominant_operator(int p,int q,bool *success) {
+	Log("%d %d\n",p,q);
 	int dlt = 0;
 	int i;
 	int mx_priority = -1, mx_pos = -1;
@@ -180,9 +181,6 @@ int find_dominant_operator(int p,int q,bool *success) {
 				}
 				break;
 		}
-	}
-	if(mx_pos == -1) {
-		Log("%d %d\n",p,q);
 	}
 	assert(mx_pos != -1);
 	*success = (mx_pos != -1);
