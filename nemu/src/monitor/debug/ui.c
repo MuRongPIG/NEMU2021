@@ -154,7 +154,7 @@ static int cmd_x(char *args) {
 		printf("Require more arguments.\n");
 		return 0;
 	}
-
+	Log("cmd_x args: %s",args);
 	bool success;
 	addr = expr(args,&success);
 	if(!success) {
