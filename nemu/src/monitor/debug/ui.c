@@ -134,7 +134,7 @@ static int cmd_info(char *args) {
 // 目前只实现读取十六进制整数作为表达式的值，之后需要将其修改为读取表达式并求值
 static int cmd_x(char *args) {
 	char *arg = strtok(NULL, " ");
-	Log("%s\n",arg);
+	Log("%s\n",arg + strlen(arg) + 1);
 	if(arg == NULL) {
 		printf("Require more arguments.\n");
 		return 0;
