@@ -71,7 +71,7 @@ int scan_watchpoint() {
 		if(val != wp->old_val) {
 			n++;
 			printf("Hint watchpoint %d at address 0x%08x\n",wp->NO,cpu.eip);
-			printf("expr = %s",wp->expr);
+			printf("expr = %s\n",wp->expr);
 			printf("Old value = 0x%08x(%d)\n",wp->old_val,wp->old_val);
 			printf("New value = 0x%08x(%d)\n",val,val);
 		}
