@@ -1,4 +1,5 @@
 #include "monitor/monitor.h"
+#include "monitor/watchpoint.h"
 #include "cpu/helper.h"
 #include <setjmp.h>
 
@@ -67,12 +68,18 @@ void cpu_exec(volatile uint32_t n) {
 		print_bin_instr(eip_temp, instr_len);
 		strcat(asm_buf, assembly);
 		Log_write("%s\n", asm_buf);
+		// 单步调试时输出指令
 		if(n_temp < MAX_INSTR_TO_PRINT) {
 			printf("%s\n", asm_buf);
 		}
 #endif
 
 		/* TODO: check watchpoints here. */
+		// 存在监视点的值发生变化，程序暂停
+		if(scan_watchpoint() > 0) {
+			nemu_state = STOP;
+		}
+
 
 
 #ifdef HAS_DEVICE

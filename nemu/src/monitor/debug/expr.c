@@ -5,31 +5,44 @@
  */
 #include <sys/types.h>
 #include <regex.h>
+#include <stdlib.h>
 
+// 接着 ASCII 码对正则 token 编码
 enum {
-	NOTYPE = 256, EQ
+	NOTYPE = 256, EQ,
 
 	/* TODO: Add more token types */
-
+	NEQ, NUM, OR, AND, REG, ID, REF, NEG,
 };
 
 static struct rule {
 	char *regex;
 	int token_type;
 } rules[] = {
-
 	/* TODO: Add more rules.
 	 * Pay attention to the precedence level of different rules.
 	 */
-
 	{" +",	NOTYPE},				// spaces
 	{"\\+", '+'},					// plus
-	{"==", EQ}						// equal
+	{"-", '-'},						// subtraction
+	{"\\*", '*'},					// multiplication
+	{"/", '/'},						// division
+	{"==", EQ},						// equal
+	{"!=", NEQ},					// not equal
+	{"\\&\\&", AND},				// and
+	{"\\|\\|", OR},					// or
+	{"\\!", '!'},
+	{"0x[0-9a-fA-F]{1,8}", NUM},	// HEX
+	{"[0-9]{1,10}", NUM},		// DEC
+	{"\\$[a-z]{1,31}", REG},		// register name
+	{"[a-zA-Z_]{1,31}", ID},		// identifiers
+	{"\\(", '('},					// left bracket
+	{"\\)", ')'},					// right bracket
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
 
-static regex_t re[NR_REGEX];
+static regex_t re[NR_REGEX] = {};
 
 /* Rules are used for many times.
  * Therefore we compile them only once before any usage.
@@ -38,8 +51,8 @@ void init_regex() {
 	int i;
 	char error_msg[128];
 	int ret;
-
 	for(i = 0; i < NR_REGEX; i ++) {
+		// 编译正则表达式
 		ret = regcomp(&re[i], rules[i].regex, REG_EXTENDED);
 		if(ret != 0) {
 			regerror(ret, &re[i], error_msg, 128);
@@ -70,7 +83,7 @@ static bool make_token(char *e) {
 				char *substr_start = e + position;
 				int substr_len = pmatch.rm_eo;
 
-				Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
+				// Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
 				position += substr_len;
 
 				/* TODO: Now a new token is recognized with rules[i]. Add codes
@@ -79,9 +92,19 @@ static bool make_token(char *e) {
 				 */
 
 				switch(rules[i].token_type) {
-					default: panic("please implement me");
+					case NOTYPE: break;
+					// 除了记录 token 类型，还需把字符串存储起来
+					// 断言长度不超过 str 数组存储上限
+					case NUM: 
+					case ID: 
+					case REG:
+						Assert(substr_len < 32, "length of int is too long (> 31)");
+						strncpy(tokens[nr_token].str, substr_start, substr_len);
+						tokens[nr_token].str[substr_len] = '\0';
+						// sprintf(tokens[nr_token].str, "%.*s", substr_len, substr_start);
+					default: 
+						tokens[nr_token++].type = rules[i].token_type;
 				}
-
 				break;
 			}
 		}
@@ -91,8 +114,167 @@ static bool make_token(char *e) {
 			return false;
 		}
 	}
-
 	return true; 
+}
+
+bool check_vaild_parentheses(int p,int q) {
+	bool ok = true;
+	int i;
+	int dlt = 0;
+	for(i = p; i <= q; ++i) {
+		if(tokens[i].type == '(') dlt++;
+		if(tokens[i].type == ')') dlt--;
+		// 括号序列不合法时，dlt < 0
+		if(dlt < 0) {
+			ok = false;
+			break;
+		}
+	}
+	if(dlt != 0) ok = false;
+	return ok;
+}
+
+// 判断表达式是否被一对匹配的括号包围，同时检查表达式的括号是否合法
+bool check_parentheses(int p,int q,bool* success) {
+	// 判断括号序列是否合法
+	*success = check_vaild_parentheses(p,q);
+	// assert(*success);
+
+	// 首先判断是否最外侧是一对括号
+	if(!(tokens[p].type == '(' && tokens[q].type == ')')) return false;
+	
+	// 判断最外侧两括号是否匹配，只需要判断去掉两括号后的表达式是否括号匹配
+	// 只有内层括号表达式仍匹配时，最外层才是一对匹配的括号
+	bool ok = true;
+	if(p+1 <= q-1) ok = check_vaild_parentheses(p+1,q-1);
+	return ok;
+}
+
+int get_op_priority(int op,bool *success) {
+	*success = true;
+	switch(op) {
+		case '!': case NEG: case REF: return 0;
+		case '*': case '/': return 1;
+		case '+': case '-': return 2;
+		case EQ: case NEQ: return 4;
+		case AND: return 9;
+		case OR: return 10;
+		default: 
+			// assert(0);
+			*success = false;
+			return 0;
+	}
+}
+
+int find_dominant_operator(int p,int q,bool *success) {
+	int dlt = 0;
+	int i;
+	int mx_priority = -1, mx_pos = -1;
+	for(i = p; i <= q; ++i) {
+		switch(tokens[i].type) {
+			case NUM: case REG: case ID: break;
+			case '(': dlt++; break;
+			case ')': dlt--; break;
+			default:
+				if(dlt == 0) {
+					int now_priority = get_op_priority(tokens[i].type,success);
+					if(!*success) { return 0; }
+					// 单目运算符左侧优先作为主运算符，特殊判断
+					if(now_priority > mx_priority ||  
+						(now_priority == mx_priority 
+						&& tokens[i].type != '!' && 
+						tokens[i].type != NEG && tokens[i].type != REF)) {
+						mx_priority = now_priority, mx_pos = i;
+					}
+				}
+				break;
+		}
+	}
+	// assert(mx_pos != -1);
+	*success = (mx_pos != -1);
+	return mx_pos;
+}
+
+uint32_t get_reg_val(const char *s,bool *success);
+
+uint32_t eval(int p,int q,bool *success) {
+	// Log("%d %d\n",p,q);
+	if(p > q) {
+		// 表达式异常
+		// assert(0);
+		*success = false;
+		return 0;
+	}
+	else if(p == q) {
+		uint32_t val;
+		switch(tokens[p].type) {
+			// 去除寄存器前的 $
+			case REG: 
+				val = get_reg_val(tokens[p].str + 1,success);
+				if(!*success) { return 0; }
+				break;
+			// 自动按照进制转换
+			case NUM: 
+				val = strtol(tokens[p].str, NULL, 0);
+				break;
+			// 按变量名查找暂时不实现
+			// case ID:
+			default:
+				// assert(0);
+				*success = false;
+				return 0;
+		} 
+		*success = true;
+		return val;
+	}
+	else if(check_parentheses(p,q,success) == true) {
+		// 表达式被括号包围，
+		// 此时去掉最外层括号，表达式不变
+		if(!*success) { return 0; }
+		return eval(p+1,q-1,success);
+	}
+	else {
+		int op = find_dominant_operator(p,q,success);
+		if(!*success) { return 0; }
+		int op_type = tokens[op].type;
+		// 单目运算符
+		if(op_type == '!' || op_type == NEG || op_type == REF) {
+			uint32_t val = eval(op+1,q,success);
+			if(!*success) { return 0; }
+			switch(op_type) {
+				case '!': 
+					return !val;
+				case NEG: 
+					return -val;
+				case REF: 
+					// current_sreg = R_DS;  // 暂时注释掉，但保留以供将来使用
+					return swaddr_read(val, 4);
+				
+				default: 
+					// assert(0);
+					*success = false;
+					return 0;
+			}
+		}
+		uint32_t Lval = eval(p,op-1,success);
+		if(!*success) { return 0; }
+		uint32_t Rval = eval(op+1,q,success);
+		if(!*success) { return 0; }
+		switch(op_type) {
+			case '+': return Lval + Rval;
+			case '-': return Lval - Rval;
+			case '*': return Lval * Rval;
+			case '/': return Lval / Rval;
+			case EQ: return Lval == Rval;
+			case NEQ: return Lval != Rval;
+			case AND: return Lval && Rval;
+			case OR: return Lval || Rval;
+			default: 
+				// assert(0);
+				*success = false;
+				return 0;
+		}
+	}
 }
 
 uint32_t expr(char *e, bool *success) {
@@ -100,9 +282,37 @@ uint32_t expr(char *e, bool *success) {
 		*success = false;
 		return 0;
 	}
-
 	/* TODO: Insert codes to evaluate the expression. */
-	panic("please implement me");
-	return 0;
+	// panic("please implement me");
+	/* 寻找 NEG 和 REF 的 tokens */
+	int i;
+	int prev_type;
+	for(i = 0; i < nr_token; ++i) {
+		// 判断 NEG
+		if(tokens[i].type == '-') {
+			if(i == 0) {
+				tokens[i].type = NEG;
+				continue;
+			}
+			prev_type = tokens[i - 1].type;
+			if(!(prev_type == ')' || prev_type == ID || prev_type == NUM ||
+			prev_type == REG)) {
+				tokens[i].type = NEG;
+			}
+		}
+		// 判断 REF
+		else if(tokens[i].type == '*') {
+			if(i == 0) {
+				tokens[i].type = REF;
+				continue;
+			}
+			prev_type = tokens[i - 1].type;
+			if(!(prev_type == ')' || prev_type == ID || prev_type == NUM ||
+			prev_type == REG)) {
+				tokens[i].type = REF;
+			}
+		}
+	}
+	return eval(0,nr_token-1,success);
 }
 

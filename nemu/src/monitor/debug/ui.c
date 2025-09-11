@@ -38,6 +38,18 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_si(char *args);
+
+static int cmd_info(char *args);
+
+static int cmd_x(char *args);
+
+static int cmd_p(char *args);
+
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -46,9 +58,19 @@ static struct {
 	{ "help", "Display informations about all supported commands", cmd_help },
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
-
+	{ 
+		"si", 
+		"\tStep one instruction exactly.\n"
+		"\tUsage: si [N]\n"
+		"\tArgument N means step N times (n till program stops for another reason).",
+		cmd_si
+	},
+	{ "info", "Generic command for showing things about the program being debugged.", cmd_info },
+	{ "x", "Scan the memory." , cmd_x},
+	{ "p", "Calculate an expression." , cmd_p},
+	{ "w", "Set a watchpoint.", cmd_w},
+	{ "d", "Delete a watchpoint.", cmd_d},
 	/* TODO: Add more commands */
-
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
@@ -76,12 +98,141 @@ static int cmd_help(char *args) {
 	return 0;
 }
 
+static int cmd_si(char *args) {
+	/* 已经在 ui_mainloop 中第一次使用 strtok,现在使用 NULL 表示继续分割同一个字符串 */
+	char *arg = strtok(NULL, " ");
+	int cnt = 0;
+	// 没有传参，默认值为 1
+	if(arg == NULL) {
+		cnt = 1;
+	}
+	else {
+		cnt = atoi(arg);
+	}
+	// assert(cnt > 0);
+	if(cnt <= 0) {
+		printf("The argument should be a positive integer.\n");
+	}
+	else {
+		cpu_exec(cnt);
+	}
+	return 0;
+}
+
+// 此处传入的 args 应当就是除了指令之外的全部参数，不需要再分割
+static int cmd_info(char *args) {
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+	}
+	else if(strcmp(args, "r") == 0) {
+		int i;
+		for(i = R_EAX; i <= R_EDI; i ++) {;
+			printf("%s\t0x%08x\t%d\n",regsl[i],reg_l(i),reg_l(i));
+		}
+		printf("eip\t0x%08x\t%d\n",cpu.eip,cpu.eip);
+	}
+	else {
+		printf("Invalid command.\n");
+	}
+	return 0;
+}
+
+static int cmd_x(char *args) {
+    // 获取数字部分（第一个 token）
+    char *num_str = strtok(NULL, " ");
+    if(num_str == NULL) {
+        printf("Require count argument.\n");
+        return 0;
+    }
+    
+    int n = atoi(num_str);
+    
+    // 获取表达式部分（剩余所有内容）
+    char *expr_str = strtok(NULL, "");
+    if(expr_str == NULL) {
+        printf("Require address expression.\n");
+        return 0;
+    }
+    
+    bool success;
+    swaddr_t addr = expr(expr_str, &success);
+    if(!success) {
+        printf("Bad expression: %s\n", expr_str);
+        return 0;
+    }
+    
+    Log("cmd_x args: %d %d\n", n, addr);
+    
+    // 输出部分
+    int i;
+    for(i = 0; i < n/4; ++i) {
+        printf("0x%08x: 0x%08x 0x%08x 0x%08x 0x%08x\n",
+               addr, 
+               swaddr_read(addr, 4), 
+               swaddr_read(addr+4, 4), 
+               swaddr_read(addr+8, 4), 
+               swaddr_read(addr+12, 4));
+        addr += 16;
+    }
+    
+    if(n % 4 != 0) {
+        printf("0x%08x:", addr);
+        for(i = 0; i < n % 4; ++i) {
+            printf(" 0x%08x", swaddr_read(addr, 4));
+            addr += 4;
+        }
+        printf("\n");
+    }
+    return 0;
+}
+
+static int cmd_p(char *args) {
+	bool success;
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+	}
+	else {
+		uint32_t res = expr(args, &success);
+		if(success) {
+			printf("0x%08x(%d)\n",res,res);
+		}
+		else {
+			printf("Bad expression.\n");
+		}
+	}
+	return 0;
+}
+
+static int cmd_w(char *args) {
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+		return 0;
+	}
+	int NO = set_watchpoint(args);
+	if(NO != -1) {
+		printf("Set watchpoint #%d\n", NO);
+	}
+	else {
+		printf("Bad expression.\n");
+	}
+	return 0;
+}
+
+static int cmd_d(char *args) {
+	int NO = atoi(args);
+	if(!delete_watchpoint(NO)) {
+		printf("Watchpoint #%d does not exist\n",NO);
+	}
+	return 0;
+}
+
 void ui_mainloop() {
 	while(1) {
 		char *str = rl_gets();
 		char *str_end = str + strlen(str);
 
 		/* extract the first token as the command */
+		/* 第一次使用 strtok 需要传入字符串，之后分割同一个字符串时传入 NULL */
 		char *cmd = strtok(str, " ");
 		if(cmd == NULL) { continue; }
 
