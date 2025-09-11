@@ -34,12 +34,12 @@ static WP* new_wp() {
 }
 
 // 释放监视点
-// static void free_wp(WP *wp) {
-// 	assert(wp >= wp_pool && wp < wp_pool + NR_WP);
-// 	free(wp->expr);
-// 	wp->next = free_;
-// 	free_ = wp;
-// }
+static void free_wp(WP *wp) {
+	assert(wp >= wp_pool && wp < wp_pool + NR_WP);
+	free(wp->expr);
+	wp->next = free_;
+	free_ = wp;
+}
 
 // 设置新的监视点，并返回其编号
 int set_watchpoint(char *args) {
@@ -71,10 +71,24 @@ int scan_watchpoint() {
 		if(val != wp->old_val) {
 			n++;
 			printf("Hint watchpoint %d at address 0x%08x\n",wp->NO,cpu.eip);
+			printf("expr = %s",wp->expr);
+			printf("Old value = 0x%08x(%d)\n",wp->old_val,wp->old_val);
+			printf("New value = 0x%08x(%d)\n",val,val);
 		}
-
 		wp->old_val = val;
 		wp = wp->next;
 	}
 	return n;
+}
+
+bool delete_watchpoint(int NO) {
+	WP *wp, *pre = NULL;
+	for(wp = head; wp != NULL; pre = wp, wp = wp->next) {
+		if(wp->NO == NO) break;
+	}
+	if(wp == NULL) return false;
+	if(pre == NULL) { head = wp->next; }
+	else { pre->next = wp->next; }
+	free_wp(wp);
+	return true;
 }

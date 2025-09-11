@@ -15,3 +15,5 @@ typedef struct watchpoint {
 #endif
 
 int set_watchpoint(char *e);
+int scan_watchpoint();
+bool delete_watchpoint(int NO);

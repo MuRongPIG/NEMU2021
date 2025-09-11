@@ -48,6 +48,8 @@ static int cmd_p(char *args);
 
 static int cmd_w(char *args);
 
+static int cmd_d(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -67,6 +69,7 @@ static struct {
 	{ "x", "Scan the memory." , cmd_x},
 	{ "p", "Calculate an expression." , cmd_p},
 	{ "w", "Set a watchpoint.", cmd_w},
+	{ "d", "Delete a watchpoint.", cmd_d},
 	/* TODO: Add more commands */
 };
 
@@ -211,6 +214,14 @@ static int cmd_w(char *args) {
 	}
 	else {
 		printf("Bad expression.\n");
+	}
+	return 0;
+}
+
+static int cmd_d(char *args) {
+	int NO = atoi(args);
+	if(!delete_watchpoint(NO)) {
+		printf("Watchpoint #%d does not exist\n",NO);
 	}
 	return 0;
 }
