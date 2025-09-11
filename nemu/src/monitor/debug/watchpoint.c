@@ -70,7 +70,7 @@ int scan_watchpoint() {
 
 		if(val != wp->old_val) {
 			n++;
-			printf("Hint watchpoint %d at address 0x%08x\n",wp->NO,get_reg_val("eip",&success));
+			printf("Hint watchpoint %d at address 0x%08x\n",wp->NO,cpu.eip);
 		}
 
 		wp->old_val = val;
