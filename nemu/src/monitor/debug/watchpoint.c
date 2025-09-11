@@ -87,6 +87,7 @@ bool delete_watchpoint(int NO) {
 		if(wp->NO == NO) break;
 	}
 	if(wp == NULL) return false;
+	printf("Delete watchpoint #%d successfully.\n",NO);
 	if(pre == NULL) { head = wp->next; }
 	else { pre->next = wp->next; }
 	free_wp(wp);
