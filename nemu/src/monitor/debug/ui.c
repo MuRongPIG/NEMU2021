@@ -46,6 +46,8 @@ static int cmd_x(char *args);
 
 static int cmd_p(char *args);
 
+static int cmd_w(char *args);
+
 static struct {
 	char *name;
 	char *description;
@@ -64,6 +66,7 @@ static struct {
 	{ "info", "Generic command for showing things about the program being debugged.", cmd_info },
 	{ "x", "Scan the memory." , cmd_x},
 	{ "p", "Calculate an expression." , cmd_p},
+	{ "w", "Set a watchpoint.", cmd_w},
 	/* TODO: Add more commands */
 };
 
@@ -193,6 +196,21 @@ static int cmd_p(char *args) {
 		else {
 			printf("Bad expression.\n");
 		}
+	}
+	return 0;
+}
+
+static int cmd_w(char *args) {
+	if(args == NULL) {
+		printf("Require more arguments.\n");
+		return 0;
+	}
+	int NO = set_watchpoint(args);
+	if(NO != -1) {
+		printf("Set watchpoint #%d\n", NO);
+	}
+	else {
+		printf("Bad expression.\n");
 	}
 	return 0;
 }

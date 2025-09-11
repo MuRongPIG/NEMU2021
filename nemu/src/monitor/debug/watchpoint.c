@@ -1,5 +1,6 @@
 #include "monitor/watchpoint.h"
 #include "monitor/expr.h"
+#include <stdlib.h>
 
 #define NR_WP 32
 
@@ -23,4 +24,35 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
+// 创建新的监视点
+static WP* new_wp() {
+	assert(free_ != NULL);
+	WP *wp = free_;
+	free_ = free_->next;
+	return wp;
+}
 
+// 释放监视点
+// static void free_wp(WP *wp) {
+// 	assert(wp >= wp_pool && wp < wp_pool + NR_WP);
+// 	wp->next = free_;
+// 	free_ = wp;
+// }
+
+// 设置新的监视点，并返回其编号
+int set_watchpoint(char *args) {
+	uint32_t val;
+	bool success;
+	val = expr(args,&success);
+	if(!success) {
+		return -1;
+	}
+
+	WP *wp = new_wp();
+	wp->expr = strdup(args);
+	wp->old_val = val;
+
+	wp->next = head;
+	head = wp;
+	return wp->NO;
+}
