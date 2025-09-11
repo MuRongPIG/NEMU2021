@@ -1,5 +1,6 @@
 #include "monitor/watchpoint.h"
 #include "monitor/expr.h"
+#include "cpu/reg.h"
 #include <stdlib.h>
 
 #define NR_WP 32
@@ -35,6 +36,7 @@ static WP* new_wp() {
 // 释放监视点
 // static void free_wp(WP *wp) {
 // 	assert(wp >= wp_pool && wp < wp_pool + NR_WP);
+// 	free(wp->expr);
 // 	wp->next = free_;
 // 	free_ = wp;
 // }
@@ -55,4 +57,24 @@ int set_watchpoint(char *args) {
 	wp->next = head;
 	head = wp;
 	return wp->NO;
+}
+
+// 扫描全部监视点，返回发生变化的监视点个数
+int scan_watchpoint() {
+	int n = 0;
+	WP *wp = head;
+	while(wp != NULL) {
+		bool success;
+		int val = expr(wp->expr,&success);
+		assert(success);
+
+		if(val != wp->old_val) {
+			n++;
+			printf("Hint watchpoint %d at address 0x%08x\n",wp->NO,get_reg_val("eip",&success));
+		}
+
+		wp->old_val = val;
+		wp = wp->next;
+	}
+	return n;
 }

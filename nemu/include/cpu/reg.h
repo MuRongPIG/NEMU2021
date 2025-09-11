@@ -72,3 +72,5 @@ extern const char* regsw[];
 extern const char* regsb[];
 
 #endif
+
+uint32_t get_reg_val(const char *s,bool *success);
