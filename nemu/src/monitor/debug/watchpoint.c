@@ -81,6 +81,7 @@ int scan_watchpoint() {
 	return n;
 }
 
+// 删除监视点，返回值表示是否成功删除
 bool delete_watchpoint(int NO) {
 	WP *wp, *pre = NULL;
 	for(wp = head; wp != NULL; pre = wp, wp = wp->next) {

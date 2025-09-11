@@ -75,9 +75,11 @@ void cpu_exec(volatile uint32_t n) {
 #endif
 
 		/* TODO: check watchpoints here. */
+		// 存在监视点的值发生变化，程序暂停
 		if(scan_watchpoint() > 0) {
 			nemu_state = STOP;
 		}
+
 
 
 #ifdef HAS_DEVICE
