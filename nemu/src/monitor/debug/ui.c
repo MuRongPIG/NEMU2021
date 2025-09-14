@@ -7,7 +7,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-void cpu_exec(uint32_t);
+void cpu_exec(uint32_t n);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 char* rl_gets() {
@@ -28,7 +28,10 @@ char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
-	cpu_exec(-1);
+	uint32_t n=0;
+	uint32_t result=scanf("%d",&n);
+	if(result!=0)
+	   cpu_exec(n);
 	return 0;
 }
 
