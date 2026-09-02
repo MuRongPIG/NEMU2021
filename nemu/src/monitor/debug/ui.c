@@ -43,6 +43,59 @@ static int cmd_si(char *args) {
     return 0;
 }
 
+static int cmd_info(char *args) {
+    char *arg = strtok(NULL, " ");
+    
+    if (arg == NULL) {
+        printf("Usage: info r (registers) or info w (watchpoints)\n");
+        return 0;
+    }
+
+    if (strcmp(arg, "r") == 0) {
+        const char *reg_names[] = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"};
+		int i=0;
+        for (i = 0; i < 8; i++) {
+            printf("%-4s 0x%08x  %d\n", reg_names[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
+        }
+        printf("%-4s 0x%08x  %d\n", "eip", cpu.eip, cpu.eip);
+    } 
+    // 后续实现观察点，可在此添加 else if (strcmp(arg, "w") == 0) 分支
+    
+    return 0;
+}
+
+static int cmd_x(char *args) {
+    char *arg_n = strtok(NULL, " ");
+    if (arg_n == NULL) {
+        printf("Usage: x N EXPR\n");
+        return 0;
+    }
+    int n = atoi(arg_n);
+
+    char *arg_expr = strtok(NULL, " ");
+    if (arg_expr == NULL) {
+        printf("Usage: x N EXPR\n");
+        return 0;
+    }
+
+    swaddr_t addr;
+    sscanf(arg_expr, "%x", &addr); 
+    /* 实现 expr() 后，可换用：
+    bool success = true;
+    addr = expr(arg_expr, &success);
+    if (!success) { printf("Invalid expression\n"); return 0; }
+    */
+
+    printf("Memory scan starting at 0x%08x:\n", addr);
+	int i=0;
+    for (i = 0; i < n; i++) {
+        uint32_t data = swaddr_read(addr, 4); 
+        printf("0x%08x:  0x%08x\n", addr, data);
+        addr += 4;
+    }
+
+    return 0;
+}
 static int cmd_help(char *args);
 
 static struct {
@@ -54,6 +107,8 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
 	{ "si", "Step into the next instruction", cmd_si },
+	{ "info", "Display information about registers or watchpoints", cmd_info },
+	{ "x", "Examine memory", cmd_x },
 	/* TODO: Add more commands */
 
 };
