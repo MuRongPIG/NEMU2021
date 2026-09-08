@@ -58,8 +58,13 @@ static int cmd_info(char *args) {
             printf("%-4s 0x%08x  %d\n", reg_names[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
         }
         printf("%-4s 0x%08x  %d\n", "eip", cpu.eip, cpu.eip);
-    } 
-    // 后续实现观察点，可在此添加 else if (strcmp(arg, "w") == 0) 分支
+    }
+    else if (strcmp(arg, "w") == 0) {
+        print_watchpoints();
+    }
+    else {
+        printf("Unknown info subcommand '%s'\n", arg);
+    }
     
     return 0;
 }
@@ -115,6 +120,27 @@ static int cmd_p(char *args) {
     printf("%u (0x%08x)\n", val, val);
     return 0;
 }
+
+static int cmd_w(char *args) {
+    if (args == NULL || *args == '\0') {
+        printf("Usage: w EXPR\n");
+        return 0;
+    }
+    set_watchpoint(args);
+    return 0;
+}
+
+static int cmd_d(char *args) {
+    char *arg = strtok(NULL, " ");
+    if (arg == NULL) {
+        printf("Usage: d N\n");
+        return 0;
+    }
+    int NO = atoi(arg);
+    delete_watchpoint(NO);
+    return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -129,6 +155,8 @@ static struct {
 	{ "info", "Display information about registers or watchpoints", cmd_info },
 	{ "x", "Examine memory", cmd_x },
 	{ "p", "Evaluate an expression", cmd_p },
+	{ "w", "Set a watchpoint on an expression", cmd_w },
+	{ "d", "Delete the watchpoint with the given NO", cmd_d },
 	/* TODO: Add more commands */
 
 };
